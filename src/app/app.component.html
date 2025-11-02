@@ -1,0 +1,46 @@
+<div class="app-container">
+  <app-game-header></app-game-header>
+  
+  <header class="app-header">
+    <div class="header-content">
+      <div class="logo">
+        <h1 class="rainbow-text">🏪 My Store Manager Game!</h1>
+      </div>
+      
+      <nav class="mode-switcher">
+        <button 
+          [class]="'btn mode-button ' + (currentMode() === AppMode.INVENTORY ? 'btn-primary' : 'btn-secondary')"
+          (click)="switchMode(AppMode.INVENTORY)">
+          <span class="button-icon">📦</span>
+          <span>Add Items</span>
+        </button>
+        <button 
+          [class]="'btn mode-button ' + (currentMode() === AppMode.SALES ? 'btn-primary' : 'btn-secondary')"
+          (click)="switchMode(AppMode.SALES)">
+          <span class="button-icon">💰</span>
+          <span>Sell Items</span>
+        </button>
+        <app-achievements></app-achievements>
+        <app-settings></app-settings>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-main">
+    @if (currentMode() === AppMode.INVENTORY) {
+      <app-inventory-management></app-inventory-management>
+    } @else {
+      <app-sales></app-sales>
+    }
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p>🌟 Keep playing to level up and unlock achievements! 🌟</p>
+      <p class="footer-stats">
+        Level {{ gameService.level() }} • {{ gameService.coins() }} coins • {{ gameService.score() }} points
+      </p>
+    </div>
+  </footer>
+</div>
+

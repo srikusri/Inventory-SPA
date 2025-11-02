@@ -1,0 +1,418 @@
+/* Global Styles - Kids Theme */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  background: #FFF5E6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  touch-action: manipulation; /* Remove 300ms tap delay on mobile */
+}
+
+body {
+  margin: 0;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+/* Buttons - Fun & Interactive */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation; /* Remove delay on mobile */
+  -webkit-tap-highlight-color: transparent;
+  
+  &:hover:not(:disabled) {
+    transform: scale(1.05);
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    filter: grayscale(50%);
+  }
+}
+
+/* Standard Button Styles */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+  }
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background: #5a6268;
+  }
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4a9427 0%, #96ca55 100%);
+  }
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff5252 0%, #dc4a5d 100%);
+  }
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Button icon and text structure */
+.btn-icon {
+  display: inline-flex;
+  font-size: 1.25em;
+}
+
+.btn-text {
+  display: inline;
+}
+
+.fun-button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px !important;
+  font-weight: 700 !important;
+  font-size: 1.125rem !important;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  
+  &:active::before {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Inputs */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Links */
+a {
+  color: #667eea;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+  
+  &:hover {
+    background: #555;
+  }
+}
+
+/* Utilities */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+.p-4 { padding: 2rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  /* Mobile-friendly buttons */
+  .btn {
+    min-height: 48px; /* Touch-friendly size */
+    padding: 0.875rem 1.25rem;
+    font-size: 1.125rem;
+    
+    &.btn-small {
+      min-height: 44px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+    }
+    
+    &.btn-large {
+      min-height: 56px;
+      padding: 1.125rem 2rem;
+      font-size: 1.25rem;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+  
+  /* Button icon responsive sizing */
+  .btn-icon {
+    font-size: 1.375rem;
+  }
+  
+  /* Button containers - add spacing between buttons */
+  .button-group,
+  .modal-footer,
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
+    .btn {
+      margin: 0;
+    }
+  }
+  
+  /* Horizontal button groups on mobile */
+  .button-group-horizontal {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    
+    .btn {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+  
+  .btn {
+    min-height: 52px; /* Even larger on small phones */
+    padding: 1rem 1.5rem;
+    font-size: 1.125rem;
+    border-radius: 14px;
+  }
+  
+  .btn-icon {
+    font-size: 1.5rem;
+  }
+  
+  /* Hide text on very small screens if needed */
+  .btn-text-optional {
+    display: none;
+  }
+}
+
+/* Icon placeholders - these would normally come from an icon library */
+.icon-camera::before { content: '📷 '; }
+.icon-keyboard::before { content: '⌨️ '; }
+.icon-stop::before { content: '⏹️ '; }
+.icon-checkout::before { content: '✓ '; }
+.icon-clear::before { content: '🗑️ '; }
+.icon-package::before { content: '📦 '; }
+.icon-cart::before { content: '🛒 '; }
+
+/* Fun decorative elements */
+.empty-icon {
+  font-size: 5rem;
+  animation: float 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.scan-instruction {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  text-align: center;
+  animation: slideDown 0.5s ease;
+  
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Animation utilities */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Print styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .printable, .printable * {
+    visibility: visible;
+  }
+  
+  .printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+

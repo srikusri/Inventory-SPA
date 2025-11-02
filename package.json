@@ -1,0 +1,50 @@
+{
+  "name": "kids-store-manager-game",
+  "version": "2.0.0",
+  "description": "A fun educational game where kids learn to manage their own store!",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --port 8080",
+    "build": "ng build --configuration production",
+    "build:gh-pages": "ng build --configuration production --base-href=/Inventory-SPA/",
+    "build:pwa": "ng build --configuration production && npm run generate-sw",
+    "generate-sw": "ngsw-config dist/inventory-spa ngsw-config.json",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "deploy": "npm run build:gh-pages && npx angular-cli-ghpages --dir=dist/inventory-spa"
+  },
+  "private": true,
+  "keywords": [
+    "kids",
+    "education",
+    "game",
+    "learning",
+    "store",
+    "inventory",
+    "fun"
+  ],
+  "dependencies": {
+    "@angular/animations": "^18.0.0",
+    "@angular/common": "^18.0.0",
+    "@angular/compiler": "^18.0.0",
+    "@angular/core": "^18.0.0",
+    "@angular/forms": "^18.0.0",
+    "@angular/platform-browser": "^18.0.0",
+    "@angular/platform-browser-dynamic": "^18.0.0",
+    "@angular/router": "^18.0.0",
+    "@angular/service-worker": "^18.0.0",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
+    "@zxing/ngx-scanner": "^18.0.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.6.0",
+    "zone.js": "~0.14.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^18.0.0",
+    "@angular/cli": "^18.0.0",
+    "@angular/compiler-cli": "^18.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "~5.4.0"
+  }
+}
