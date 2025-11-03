@@ -9,9 +9,8 @@ import { SoundService } from '../../services/sound.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <button class="btn btn-secondary settings-btn" (click)="showModal = true">
-      <span class="btn-icon">⚙️</span>
-      <span class="btn-text">Settings</span>
+    <button class="settings-icon-btn" (click)="showModal = true" title="Settings">
+      ⚙️
     </button>
 
     @if (showModal) {
@@ -157,9 +156,23 @@ import { SoundService } from '../../services/sound.service';
     }
   `,
   styles: [`
-    .settings-btn {
-      font-size: 1rem;
-      font-weight: 600;
+    .settings-icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .settings-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1) rotate(90deg);
     }
 
     .modal-overlay {
