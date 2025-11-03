@@ -1,16 +1,21 @@
 <div class="sales-container">
   <div class="header">
     <h1>💰 Sell Items!</h1>
-    <div class="header-stats">
-      <div class="stat-card cart">
+    <div class="header-stats-compact">
+      <div class="stat-compact">
         <span class="stat-icon">🛒</span>
-        <span class="stat-label">Items</span>
-        <span class="stat-value">{{ cartService.cartCount() }}</span>
+        <span class="stat-text">
+          <span class="stat-label">Items</span>
+          <span class="stat-value">{{ cartService.cartCount() }}</span>
+        </span>
       </div>
-      <div class="stat-card total">
+      <div class="stat-divider"></div>
+      <div class="stat-compact">
         <span class="stat-icon">💵</span>
-        <span class="stat-label">Total</span>
-        <span class="stat-value">{{ cartService.cartTotal() | currencyFormat }}</span>
+        <span class="stat-text">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ cartService.cartTotal() | currencyFormat }}</span>
+        </span>
       </div>
     </div>
   </div>
