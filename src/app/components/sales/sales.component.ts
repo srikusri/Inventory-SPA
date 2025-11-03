@@ -14,6 +14,7 @@ import { QrPaymentComponent } from '../qr-payment/qr-payment.component';
 import { Sale } from '../../models/inventory-item.model';
 import { PersonaType } from '../../models/wallet.model';
 import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
+import { CurrencyService } from '../../services/currency.service';
 
 @Component({
   selector: 'app-sales',
@@ -56,7 +57,8 @@ export class SalesComponent {
     private toastService: ToastService,
     private gameService: GameService,
     private soundService: SoundService,
-    public walletService: WalletService
+    public walletService: WalletService,
+    private currencyService: CurrencyService
   ) {}
 
   startScanning(): void {
@@ -176,7 +178,8 @@ export class SalesComponent {
       this.completedSale.set(sale);
       this.gameService.onSaleCompleted(sale.total);
       this.soundService.playSound('levelUp');
-      this.showToast(`🎉 Payment received! \$${amount.toFixed(2)} added to wallet!`, 'success');
+      const formattedAmount = this.currencyService.format(amount);
+      this.showToast(`🎉 Payment received! ${formattedAmount} added to wallet!`, 'success');
       this.showQRPayment.set(false);
     } else {
       this.soundService.playSound('error');

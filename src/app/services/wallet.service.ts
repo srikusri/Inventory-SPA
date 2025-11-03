@@ -195,20 +195,28 @@ export class WalletService {
     localStorage.removeItem(this.PAYMENT_REQUEST_KEY);
   }
 
-  // Manual payment confirmation - directly credit seller's wallet
+  // Manual payment confirmation - credit seller's wallet
+  // This is for CASH payments or when buyer pays outside the app
   confirmManualPayment(amount: number): boolean {
     const sellerPersona = this.personaSignal();
     if (!sellerPersona || sellerPersona.type !== PersonaType.SELLER) {
       return false;
     }
 
-    // Credit to seller
+    // First check if buyer already paid through the app
+    const request = this.getPaymentRequest();
+    if (request && request.status === 'completed') {
+      // Buyer paid through app - use the standard completion flow
+      return this.checkAndCompletePayment().success;
+    }
+
+    // Otherwise, this is a cash payment - just credit seller
     sellerPersona.wallet.balance += amount;
     sellerPersona.wallet.transactions.unshift({
       id: this.generateId(),
       type: 'credit',
       amount: amount,
-      description: `Payment received (manual confirmation)`,
+      description: `Cash payment received`,
       timestamp: new Date()
     });
 
