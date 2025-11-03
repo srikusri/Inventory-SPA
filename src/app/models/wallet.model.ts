@@ -1,27 +1,37 @@
-export enum Persona {
+export enum PersonaType {
   SELLER = 'seller',
   BUYER = 'buyer'
 }
 
-export interface WalletTransaction {
-  id: string;
-  type: 'credit' | 'debit';
-  amount: number;
-  description: string;
-  timestamp: Date;
-  balanceAfter: number;
-}
-
 export interface Wallet {
-  persona: Persona;
   balance: number;
   transactions: WalletTransaction[];
 }
 
-export interface PaymentRequest {
-  sellerId: string;
+export interface WalletTransaction {
+  id: string;
+  type: 'credit' | 'debit' | 'load';
   amount: number;
-  timestamp: number;
   description: string;
+  timestamp: Date;
+  fromPersona?: string;
+  toPersona?: string;
 }
 
+export interface PaymentRequest {
+  requestId: string;
+  sellerId: string;
+  sellerName: string;
+  amount: number;
+  saleId: string;
+  timestamp: Date;
+  status: 'pending' | 'completed' | 'cancelled';
+}
+
+export interface Persona {
+  id: string;
+  type: PersonaType;
+  name: string;
+  wallet: Wallet;
+  createdAt: Date;
+}

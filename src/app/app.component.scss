@@ -42,6 +42,42 @@
   }
 }
 
+.persona-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.persona-badge {
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  
+  &.seller {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white;
+  }
+  
+  &.buyer {
+    background: linear-gradient(135deg, #FF6B9D 0%, #C44569 100%);
+    color: white;
+  }
+}
+
+.persona-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.wallet-and-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .rainbow-text {
   background: linear-gradient(90deg, 
     #FF6B6B, #4ECDC4, #45B7D1, #FFA07A, #98D8C8, #F7DC6F);
@@ -233,6 +269,108 @@
       font-size: 0.75rem;
       text-align: center;
     }
+  }
+}
+
+// Buyer View Styles
+.buyer-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.buyer-hero {
+  background: white;
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  
+  h2 {
+    font-size: 2.5rem;
+    margin: 0 0 1rem 0;
+    background: linear-gradient(135deg, #FF6B9D 0%, #C44569 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  > p {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 3rem;
+  }
+}
+
+.buyer-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+  
+  .stat-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s;
+    
+    &:hover {
+      transform: translateY(-4px);
+    }
+    
+    .stat-icon {
+      font-size: 3rem;
+    }
+    
+    .stat-content {
+      text-align: left;
+    }
+    
+    .stat-label {
+      font-size: 0.938rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #333;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .buyer-view {
+    padding: 1.5rem 1rem;
+  }
+  
+  .buyer-hero {
+    padding: 2rem 1.5rem;
+    
+    h2 {
+      font-size: 2rem;
+    }
+    
+    > p {
+      font-size: 1.125rem;
+      margin-bottom: 2rem;
+    }
+  }
+  
+  .buyer-stats {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .wallet-and-nav {
+    flex-direction: column;
+    gap: 1rem;
   }
 }
 

@@ -195,5 +195,14 @@
   </div>
 }
 
+<!-- QR Payment Modal for Sellers -->
+<app-qr-payment
+  [visible]="showQRPayment()"
+  [paymentAmount]="cartService.cartTotal()"
+  [saleId]="pendingSaleId()"
+  (paymentCompleted)="onPaymentReceived($event)"
+  (cancelled)="onPaymentCancelled()">
+</app-qr-payment>
+
 <app-toast></app-toast>
 

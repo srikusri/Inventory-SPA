@@ -8,8 +8,11 @@ import { InventoryService } from '../../services/inventory.service';
 import { GameService } from '../../services/game.service';
 import { SoundService } from '../../services/sound.service';
 import { ToastService } from '../../services/toast.service';
+import { WalletService } from '../../services/wallet.service';
 import { ToastComponent } from '../toast/toast.component';
+import { QrPaymentComponent } from '../qr-payment/qr-payment.component';
 import { Sale } from '../../models/inventory-item.model';
+import { PersonaType } from '../../models/wallet.model';
 
 @Component({
   selector: 'app-sales',
@@ -18,7 +21,8 @@ import { Sale } from '../../models/inventory-item.model';
     CommonModule,
     FormsModule,
     ZXingScannerModule,
-    ToastComponent
+    ToastComponent,
+    QrPaymentComponent
   ],
   templateUrl: './sales.component.html',
   styleUrls: ['./sales.component.scss'],
@@ -27,8 +31,10 @@ import { Sale } from '../../models/inventory-item.model';
 export class SalesComponent {
   scanning = signal(false);
   showCheckoutModal = signal(false);
+  showQRPayment = signal(false);
   completedSale = signal<Sale | null>(null);
   scanQuantity = signal(1);
+  pendingSaleId = signal<string>('');
 
   // Barcode formats to scan
   barcodeFormats = [
@@ -46,7 +52,8 @@ export class SalesComponent {
     public inventoryService: InventoryService,
     private toastService: ToastService,
     private gameService: GameService,
-    private soundService: SoundService
+    private soundService: SoundService,
+    public walletService: WalletService
   ) {}
 
   startScanning(): void {
@@ -126,6 +133,45 @@ export class SalesComponent {
   }
 
   finalizeSale(): void {
+    // Check if seller persona is active
+    const persona = this.walletService.persona();
+    const isSeller = persona?.type === PersonaType.SELLER;
+    
+    if (isSeller) {
+      // For sellers: Show QR code for payment
+      const total = this.cartService.cartTotal();
+      this.pendingSaleId.set(Date.now().toString());
+      this.showQRPayment.set(true);
+      this.showCheckoutModal.set(false);
+    } else {
+      // For non-wallet users or direct sale
+      this.completeSaleWithoutPayment();
+    }
+  }
+
+  onPaymentReceived(amount: number): void {
+    // Complete the sale after payment received
+    const sale = this.cartService.finalizeSale();
+    
+    if (sale) {
+      this.completedSale.set(sale);
+      this.gameService.onSaleCompleted(sale.total);
+      this.soundService.playSound('levelUp');
+      this.showToast(`🎉 Payment received! \$${amount.toFixed(2)} added to wallet!`, 'success');
+      this.showQRPayment.set(false);
+    } else {
+      this.soundService.playSound('error');
+      this.showToast('😕 Oops! Something went wrong!', 'error');
+    }
+  }
+
+  onPaymentCancelled(): void {
+    this.showQRPayment.set(false);
+    this.showCheckoutModal.set(true);
+    this.showToast('Payment cancelled', 'info');
+  }
+
+  private completeSaleWithoutPayment(): void {
     const sale = this.cartService.finalizeSale();
 
     if (sale) {

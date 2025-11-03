@@ -1,0 +1,408 @@
+import { Component, Input, Output, EventEmitter, signal, effect, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { WalletService } from '../../services/wallet.service';
+import { PaymentRequest } from '../../models/wallet.model';
+import * as QRCode from 'qrcode';
+
+@Component({
+  selector: 'app-qr-payment',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    @if (showQR()) {
+      <div class="qr-overlay">
+        <div class="qr-modal">
+          <div class="qr-header">
+            <h2>💳 Awaiting Payment</h2>
+          </div>
+
+          <div class="qr-body">
+            <div class="payment-amount">
+              <div class="amount-label">Amount Due</div>
+              <div class="amount-value">\${{ amount().toFixed(2) }}</div>
+            </div>
+
+            <div class="qr-container">
+              <canvas #qrCanvas class="qr-canvas"></canvas>
+            </div>
+
+            <div class="instructions">
+              <div class="instruction-icon">📱</div>
+              <p>Ask the buyer to scan this QR code with their device</p>
+            </div>
+
+            @if (checkingPayment()) {
+              <div class="checking-status">
+                <div class="spinner"></div>
+                <p>Checking for payment...</p>
+              </div>
+            }
+
+            @if (paymentComplete()) {
+              <div class="success-message">
+                <div class="success-icon">✅</div>
+                <h3>Payment Received!</h3>
+                <p class="received-amount">\${{ receivedAmount().toFixed(2) }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="qr-footer">
+            @if (!paymentComplete()) {
+              <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+            } @else {
+              <button class="btn btn-success btn-large" (click)="close()">
+                🎉 Complete Sale
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  `,
+  styles: [`
+    .qr-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2500;
+      animation: fadeIn 0.3s;
+    }
+
+    .qr-modal {
+      background: white;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.4s;
+    }
+
+    .qr-header {
+      background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+      padding: 1.5rem;
+      border-radius: 24px 24px 0 0;
+      text-align: center;
+    }
+
+    .qr-header h2 {
+      margin: 0;
+      color: white;
+      font-size: 1.75rem;
+    }
+
+    .qr-body {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .payment-amount {
+      margin-bottom: 2rem;
+    }
+
+    .amount-label {
+      font-size: 1.125rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .amount-value {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .qr-container {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      margin-bottom: 2rem;
+    }
+
+    .qr-canvas {
+      display: block;
+      max-width: 280px;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .instructions {
+      margin-bottom: 1.5rem;
+    }
+
+    .instruction-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      animation: pulse 2s infinite;
+    }
+
+    .instructions p {
+      font-size: 1.125rem;
+      color: #666;
+      margin: 0;
+    }
+
+    .checking-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f0f8ff;
+      border-radius: 12px;
+      margin-top: 1rem;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .checking-status p {
+      margin: 0;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .success-message {
+      padding: 2rem;
+      background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+      border-radius: 16px;
+      color: white;
+      margin-top: 1rem;
+      animation: successPop 0.5s;
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounce 0.6s;
+    }
+
+    .success-message h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.75rem;
+    }
+
+    .received-amount {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .qr-footer {
+      padding: 1.5rem;
+      border-top: 2px solid #f0f0f0;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .qr-footer button {
+      min-width: 150px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes successPop {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .qr-modal {
+        width: 95%;
+      }
+
+      .qr-body {
+        padding: 1.5rem;
+      }
+
+      .amount-value {
+        font-size: 2.5rem;
+      }
+
+      .qr-canvas {
+        max-width: 240px;
+      }
+    }
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class QrPaymentComponent {
+  @Input() set visible(value: boolean) {
+    this.showQR.set(value);
+  }
+
+  @Input() set paymentAmount(value: number) {
+    this.amount.set(value);
+  }
+
+  @Input() set saleId(value: string) {
+    this._saleId = value;
+  }
+
+  @Output() paymentCompleted = new EventEmitter<number>();
+  @Output() cancelled = new EventEmitter<void>();
+
+  showQR = signal(false);
+  amount = signal(0);
+  checkingPayment = signal(false);
+  paymentComplete = signal(false);
+  receivedAmount = signal(0);
+
+  private _saleId = '';
+  private checkInterval: any;
+
+  constructor(private walletService: WalletService) {
+    effect(() => {
+      if (this.showQR()) {
+        this.initializePayment();
+      } else {
+        this.cleanup();
+      }
+    });
+  }
+
+  private async initializePayment(): Promise<void> {
+    // Create payment request
+    const request = this.walletService.createPaymentRequest(this.amount(), this._saleId);
+    
+    // Generate QR code
+    await this.generateQRCode(request);
+    
+    // Start checking for payment
+    this.startPaymentCheck();
+  }
+
+  private async generateQRCode(request: PaymentRequest): Promise<void> {
+    const qrData = JSON.stringify({
+      type: 'payment_request',
+      requestId: request.requestId,
+      sellerId: request.sellerId,
+      sellerName: request.sellerName,
+      amount: request.amount,
+      saleId: request.saleId,
+      timestamp: request.timestamp.toISOString()
+    });
+
+    try {
+      // Wait for the canvas to be available
+      setTimeout(async () => {
+        const canvas = document.querySelector('.qr-canvas') as HTMLCanvasElement;
+        if (canvas) {
+          await QRCode.toCanvas(canvas, qrData, {
+            width: 280,
+            margin: 2,
+            color: {
+              dark: '#000000',
+              light: '#ffffff'
+            }
+          });
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
+  }
+
+  private startPaymentCheck(): void {
+    this.checkingPayment.set(true);
+    
+    // Check every 2 seconds for payment completion
+    this.checkInterval = setInterval(() => {
+      const result = this.walletService.checkAndCompletePayment();
+      if (result.success && result.amount) {
+        this.onPaymentReceived(result.amount);
+      }
+    }, 2000);
+  }
+
+  private onPaymentReceived(amount: number): void {
+    this.checkingPayment.set(false);
+    this.paymentComplete.set(true);
+    this.receivedAmount.set(amount);
+    
+    this.cleanup();
+    
+    // Auto-close after 3 seconds
+    setTimeout(() => {
+      this.close();
+    }, 3000);
+  }
+
+  cancel(): void {
+    this.walletService.clearPaymentRequest();
+    this.cancelled.emit();
+    this.showQR.set(false);
+  }
+
+  close(): void {
+    this.paymentCompleted.emit(this.receivedAmount());
+    this.showQR.set(false);
+  }
+
+  private cleanup(): void {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.cleanup();
+  }
+}
+

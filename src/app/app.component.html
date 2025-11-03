@@ -1,46 +1,117 @@
 <div class="app-container">
-  <app-game-header></app-game-header>
-  
-  <header class="app-header">
-    <div class="header-content">
-      <div class="logo">
-        <h1 class="rainbow-text">🏪 My Store Manager Game!</h1>
+  <!-- Persona Selection (shows if no persona) -->
+  <app-persona-selection></app-persona-selection>
+
+  @if (walletService.hasPersona()) {
+    <app-game-header></app-game-header>
+    
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo">
+          <h1 class="rainbow-text">🏪 My Store Manager Game!</h1>
+          @if (walletService.persona()) {
+            <div class="persona-info">
+              <span class="persona-badge" [class.seller]="walletService.persona()?.type === PersonaType.SELLER"
+                    [class.buyer]="walletService.persona()?.type === PersonaType.BUYER">
+                {{ walletService.persona()?.type === PersonaType.SELLER ? '🏪 Seller' : '🛍️ Buyer' }}
+              </span>
+              <span class="persona-name">{{ walletService.persona()?.name }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="wallet-and-nav">
+          <app-wallet-display></app-wallet-display>
+          
+          <nav class="mode-switcher">
+            @if (walletService.persona()?.type === PersonaType.SELLER) {
+              <button 
+                [class]="'btn mode-button ' + (currentMode() === AppMode.INVENTORY ? 'btn-primary' : 'btn-secondary')"
+                (click)="switchMode(AppMode.INVENTORY)">
+                <span class="button-icon">📦</span>
+                <span>Add Items</span>
+              </button>
+              <button 
+                [class]="'btn mode-button ' + (currentMode() === AppMode.SALES ? 'btn-primary' : 'btn-secondary')"
+                (click)="switchMode(AppMode.SALES)">
+                <span class="button-icon">💰</span>
+                <span>Sell Items</span>
+              </button>
+              <app-sales-history></app-sales-history>
+            }
+            
+            @if (walletService.persona()?.type === PersonaType.BUYER) {
+              <button 
+                class="btn mode-button btn-success"
+                (click)="openPaymentScanner()">
+                <span class="button-icon">📱</span>
+                <span>Scan to Pay</span>
+              </button>
+            }
+            
+            <app-achievements></app-achievements>
+          </nav>
+        </div>
       </div>
+    </header>
+
+    <main class="app-main">
+      @if (walletService.persona()?.type === PersonaType.SELLER) {
+        @if (currentMode() === AppMode.INVENTORY) {
+          <app-inventory-management></app-inventory-management>
+        } @else {
+          <app-sales></app-sales>
+        }
+      }
       
-      <nav class="mode-switcher">
-        <button 
-          [class]="'btn mode-button ' + (currentMode() === AppMode.INVENTORY ? 'btn-primary' : 'btn-secondary')"
-          (click)="switchMode(AppMode.INVENTORY)">
-          <span class="button-icon">📦</span>
-          <span>Add Items</span>
-        </button>
-        <button 
-          [class]="'btn mode-button ' + (currentMode() === AppMode.SALES ? 'btn-primary' : 'btn-secondary')"
-          (click)="switchMode(AppMode.SALES)">
-          <span class="button-icon">💰</span>
-          <span>Sell Items</span>
-        </button>
-        <app-sales-history></app-sales-history>
-        <app-achievements></app-achievements>
-      </nav>
-    </div>
-  </header>
+      @if (walletService.persona()?.type === PersonaType.BUYER) {
+        <div class="buyer-view">
+          <div class="buyer-hero">
+            <h2>👋 Welcome, {{ walletService.persona()?.name }}!</h2>
+            <p>Ready to shop? Scan QR codes to pay for your purchases!</p>
+            
+            <div class="buyer-stats">
+              <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                  <div class="stat-label">Wallet Balance</div>
+                  <div class="stat-value">\${{ walletService.balance().toFixed(2) }}</div>
+                </div>
+              </div>
+              
+              <div class="stat-card">
+                <div class="stat-icon">🛍️</div>
+                <div class="stat-content">
+                  <div class="stat-label">Total Purchases</div>
+                  <div class="stat-value">{{ walletService.transactions().filter(t => t.type === 'debit').length }}</div>
+                </div>
+              </div>
+            </div>
 
-  <main class="app-main">
-    @if (currentMode() === AppMode.INVENTORY) {
-      <app-inventory-management></app-inventory-management>
-    } @else {
-      <app-sales></app-sales>
+            <button class="btn btn-primary btn-large" (click)="openPaymentScanner()">
+              📱 Scan QR Code to Pay
+            </button>
+          </div>
+        </div>
+      }
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p>🌟 Keep playing to level up and unlock achievements! 🌟</p>
+        <p class="footer-stats">
+          Level {{ gameService.level() }} • {{ gameService.coins() }} coins • {{ gameService.score() }} points
+        </p>
+      </div>
+    </footer>
+
+    <!-- QR Scanner for Buyers -->
+    @if (showQRScanner()) {
+      <app-qr-scanner-payment
+        (paymentCompleted)="onPaymentCompleted()"
+        (closed)="closePaymentScanner()">
+      </app-qr-scanner-payment>
     }
-  </main>
-
-  <footer class="app-footer">
-    <div class="footer-content">
-      <p>🌟 Keep playing to level up and unlock achievements! 🌟</p>
-      <p class="footer-stats">
-        Level {{ gameService.level() }} • {{ gameService.coins() }} coins • {{ gameService.score() }} points
-      </p>
-    </div>
-  </footer>
+  }
 </div>
 

@@ -1,223 +1,206 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Persona, Wallet, WalletTransaction, PaymentRequest } from '../models/wallet.model';
-import { StorageService } from './storage.service';
+import { Persona, PersonaType, Wallet, WalletTransaction, PaymentRequest } from '../models/wallet.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WalletService {
-  private readonly WALLET_KEY = 'kids_wallet';
-  private readonly PERSONA_KEY = 'kids_persona';
-  private readonly SESSION_ID_KEY = 'kids_session_id';
+  private readonly PERSONA_KEY = 'kids_wallet_persona';
+  private readonly PAYMENT_REQUEST_KEY = 'kids_payment_request';
   
-  private walletSignal = signal<Wallet>({
-    persona: Persona.SELLER,
-    balance: 0,
-    transactions: []
-  });
+  private personaSignal = signal<Persona | null>(null);
   
-  wallet = this.walletSignal.asReadonly();
-  balance = computed(() => this.walletSignal().balance);
-  persona = computed(() => this.walletSignal().persona);
-  transactions = computed(() => this.walletSignal().transactions);
-
-  private sessionId: string;
-
-  constructor(private storageService: StorageService) {
-    this.sessionId = this.loadOrCreateSessionId();
-    this.loadWallet();
+  persona = this.personaSignal.asReadonly();
+  hasPersona = computed(() => this.personaSignal() !== null);
+  balance = computed(() => this.personaSignal()?.wallet.balance || 0);
+  transactions = computed(() => this.personaSignal()?.wallet.transactions || []);
+  
+  constructor() {
+    this.loadPersona();
   }
 
-  private loadOrCreateSessionId(): string {
-    let id = this.storageService.getItem(this.SESSION_ID_KEY);
-    if (!id) {
-      id = this.generateSessionId();
-      this.storageService.setItem(this.SESSION_ID_KEY, id);
-    }
-    return id;
-  }
-
-  private generateSessionId(): string {
-    return 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
-  }
-
-  getSessionId(): string {
-    return this.sessionId;
-  }
-
-  hasPersona(): boolean {
-    return !!this.storageService.getItem(this.PERSONA_KEY);
-  }
-
-  setPersona(persona: Persona): void {
-    this.storageService.setItem(this.PERSONA_KEY, persona);
-    const currentWallet = this.walletSignal();
-    this.walletSignal.set({
-      ...currentWallet,
-      persona
-    });
-    this.saveWallet();
-  }
-
-  private loadWallet(): void {
-    const savedPersona = this.storageService.getItem(this.PERSONA_KEY);
-    const savedWallet = this.storageService.getItem(this.WALLET_KEY);
-    
-    if (savedWallet) {
+  private loadPersona(): void {
+    const saved = localStorage.getItem(this.PERSONA_KEY);
+    if (saved) {
       try {
-        const wallet = JSON.parse(savedWallet);
+        const persona = JSON.parse(saved);
         // Convert timestamp strings back to Date objects
-        wallet.transactions = wallet.transactions.map((t: any) => ({
+        persona.createdAt = new Date(persona.createdAt);
+        persona.wallet.transactions = persona.wallet.transactions.map((t: any) => ({
           ...t,
           timestamp: new Date(t.timestamp)
         }));
-        this.walletSignal.set(wallet);
+        this.personaSignal.set(persona);
       } catch (error) {
-        console.error('Error loading wallet:', error);
+        console.error('Error loading persona:', error);
       }
     }
+  }
 
-    if (savedPersona) {
-      const currentWallet = this.walletSignal();
-      this.walletSignal.set({
-        ...currentWallet,
-        persona: savedPersona as Persona
+  private savePersona(): void {
+    const persona = this.personaSignal();
+    if (persona) {
+      localStorage.setItem(this.PERSONA_KEY, JSON.stringify(persona));
+    }
+  }
+
+  createPersona(type: PersonaType, name: string): Persona {
+    const persona: Persona = {
+      id: this.generateId(),
+      type,
+      name,
+      wallet: {
+        balance: type === PersonaType.BUYER ? 100 : 0, // Buyers start with $100
+        transactions: []
+      },
+      createdAt: new Date()
+    };
+    
+    if (type === PersonaType.BUYER) {
+      // Add initial credit transaction
+      persona.wallet.transactions.push({
+        id: this.generateId(),
+        type: 'load',
+        amount: 100,
+        description: 'Welcome bonus',
+        timestamp: new Date()
       });
     }
-  }
-
-  private saveWallet(): void {
-    this.storageService.setItem(this.WALLET_KEY, JSON.stringify(this.walletSignal()));
-  }
-
-  private generateTransactionId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-  }
-
-  addMoney(amount: number): void {
-    if (amount <= 0) return;
-
-    const currentWallet = this.walletSignal();
-    const newBalance = currentWallet.balance + amount;
-
-    const transaction: WalletTransaction = {
-      id: this.generateTransactionId(),
-      type: 'credit',
-      amount,
-      description: 'Added money to wallet',
-      timestamp: new Date(),
-      balanceAfter: newBalance
-    };
-
-    this.walletSignal.set({
-      ...currentWallet,
-      balance: newBalance,
-      transactions: [transaction, ...currentWallet.transactions]
-    });
-
-    this.saveWallet();
-  }
-
-  deductMoney(amount: number, description: string = 'Payment'): boolean {
-    const currentWallet = this.walletSignal();
     
-    if (currentWallet.balance < amount) {
-      return false; // Insufficient funds
-    }
+    this.personaSignal.set(persona);
+    this.savePersona();
+    return persona;
+  }
 
-    const newBalance = currentWallet.balance - amount;
+  switchPersona(): void {
+    this.personaSignal.set(null);
+    localStorage.removeItem(this.PERSONA_KEY);
+    localStorage.removeItem(this.PAYMENT_REQUEST_KEY);
+  }
+
+  loadMoney(amount: number): boolean {
+    const persona = this.personaSignal();
+    if (!persona || amount <= 0) return false;
 
     const transaction: WalletTransaction = {
-      id: this.generateTransactionId(),
-      type: 'debit',
+      id: this.generateId(),
+      type: 'load',
       amount,
-      description,
-      timestamp: new Date(),
-      balanceAfter: newBalance
+      description: 'Money loaded to wallet',
+      timestamp: new Date()
     };
 
-    this.walletSignal.set({
-      ...currentWallet,
-      balance: newBalance,
-      transactions: [transaction, ...currentWallet.transactions]
-    });
-
-    this.saveWallet();
+    persona.wallet.balance += amount;
+    persona.wallet.transactions.unshift(transaction);
+    
+    this.personaSignal.set({ ...persona });
+    this.savePersona();
     return true;
   }
 
-  creditMoney(amount: number, description: string = 'Payment received'): void {
-    const currentWallet = this.walletSignal();
-    const newBalance = currentWallet.balance + amount;
+  // Seller creates a payment request and stores it
+  createPaymentRequest(amount: number, saleId: string): PaymentRequest {
+    const persona = this.personaSignal();
+    if (!persona) throw new Error('No persona selected');
 
-    const transaction: WalletTransaction = {
-      id: this.generateTransactionId(),
-      type: 'credit',
+    const request: PaymentRequest = {
+      requestId: this.generateId(),
+      sellerId: persona.id,
+      sellerName: persona.name,
       amount,
-      description,
+      saleId,
       timestamp: new Date(),
-      balanceAfter: newBalance
+      status: 'pending'
     };
 
-    this.walletSignal.set({
-      ...currentWallet,
-      balance: newBalance,
-      transactions: [transaction, ...currentWallet.transactions]
+    localStorage.setItem(this.PAYMENT_REQUEST_KEY, JSON.stringify(request));
+    return request;
+  }
+
+  // Get current payment request
+  getPaymentRequest(): PaymentRequest | null {
+    const saved = localStorage.getItem(this.PAYMENT_REQUEST_KEY);
+    if (saved) {
+      try {
+        const request = JSON.parse(saved);
+        request.timestamp = new Date(request.timestamp);
+        return request;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // Buyer scans and pays
+  processPayment(paymentRequest: PaymentRequest): boolean {
+    const buyerPersona = this.personaSignal();
+    if (!buyerPersona || buyerPersona.type !== PersonaType.BUYER) return false;
+    if (buyerPersona.wallet.balance < paymentRequest.amount) return false;
+
+    // Deduct from buyer
+    buyerPersona.wallet.balance -= paymentRequest.amount;
+    buyerPersona.wallet.transactions.unshift({
+      id: this.generateId(),
+      type: 'debit',
+      amount: paymentRequest.amount,
+      description: `Payment to ${paymentRequest.sellerName}`,
+      timestamp: new Date(),
+      toPersona: paymentRequest.sellerId
     });
 
-    this.saveWallet();
+    this.personaSignal.set({ ...buyerPersona });
+    this.savePersona();
+
+    // Update payment request status
+    paymentRequest.status = 'completed';
+    localStorage.setItem(this.PAYMENT_REQUEST_KEY, JSON.stringify(paymentRequest));
+
+    return true;
   }
 
-  createPaymentRequest(amount: number, description: string): PaymentRequest {
-    return {
-      sellerId: this.sessionId,
-      amount,
-      timestamp: Date.now(),
-      description
-    };
-  }
-
-  processPayment(paymentRequest: PaymentRequest): { success: boolean; message: string } {
-    // Buyer paying seller
-    if (this.persona() !== Persona.BUYER) {
-      return { success: false, message: 'Only buyers can make payments' };
+  // Seller checks if payment was completed and updates their wallet
+  checkAndCompletePayment(): { success: boolean; amount?: number } {
+    const sellerPersona = this.personaSignal();
+    if (!sellerPersona || sellerPersona.type !== PersonaType.SELLER) {
+      return { success: false };
     }
 
-    const success = this.deductMoney(
-      paymentRequest.amount,
-      `Payment to seller: ${paymentRequest.description}`
-    );
-
-    if (success) {
-      return {
-        success: true,
-        message: `Paid $${paymentRequest.amount.toFixed(2)} successfully!`
-      };
-    } else {
-      return {
-        success: false,
-        message: 'Insufficient balance in wallet'
-      };
+    const request = this.getPaymentRequest();
+    if (!request || request.status !== 'completed' || request.sellerId !== sellerPersona.id) {
+      return { success: false };
     }
+
+    // Credit to seller
+    sellerPersona.wallet.balance += request.amount;
+    sellerPersona.wallet.transactions.unshift({
+      id: this.generateId(),
+      type: 'credit',
+      amount: request.amount,
+      description: `Payment received for sale`,
+      timestamp: new Date(),
+      fromPersona: 'buyer'
+    });
+
+    this.personaSignal.set({ ...sellerPersona });
+    this.savePersona();
+
+    // Clear payment request
+    localStorage.removeItem(this.PAYMENT_REQUEST_KEY);
+
+    return { success: true, amount: request.amount };
   }
 
-  resetWallet(): void {
-    this.walletSignal.set({
-      persona: this.walletSignal().persona,
-      balance: 0,
-      transactions: []
-    });
-    this.saveWallet();
+  clearPaymentRequest(): void {
+    localStorage.removeItem(this.PAYMENT_REQUEST_KEY);
   }
 
-  clearPersona(): void {
-    this.storageService.removeItem(this.PERSONA_KEY);
-    this.storageService.removeItem(this.WALLET_KEY);
-    this.walletSignal.set({
-      persona: Persona.SELLER,
-      balance: 0,
-      transactions: []
-    });
+  getTransactionHistory(limit?: number): WalletTransaction[] {
+    const transactions = this.transactions();
+    return limit ? transactions.slice(0, limit) : transactions;
+  }
+
+  private generateId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 }
-
