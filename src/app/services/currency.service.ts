@@ -19,8 +19,8 @@ export class CurrencyService {
   }
 
   private getDefaultCurrency(): Currency {
-    // Default to USD
-    return AVAILABLE_CURRENCIES[0];
+    // Default to INR
+    return AVAILABLE_CURRENCIES.find(c => c.code === 'INR') || AVAILABLE_CURRENCIES[0];
   }
 
   private loadCurrency(): void {
