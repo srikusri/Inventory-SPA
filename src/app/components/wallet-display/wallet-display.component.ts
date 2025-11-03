@@ -157,20 +157,20 @@ import { CurrencyService } from '../../services/currency.service';
       align-items: center;
       gap: 0.5rem;
       padding: 0.625rem 1.25rem;
-      background: rgba(0, 0, 0, 0.7);
-      border: 2px solid rgba(0, 0, 0, 0.8);
+      background: rgba(255, 255, 255, 0.25);
+      border: 2px solid rgba(255, 255, 255, 0.4);
       border-radius: 24px;
       cursor: pointer;
       transition: all 0.2s;
       color: white;
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     .wallet-button:hover {
-      background: rgba(0, 0, 0, 0.85);
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
     .wallet-icon {

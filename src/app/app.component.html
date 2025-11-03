@@ -31,8 +31,6 @@
               <span>Scan to Pay</span>
             </button>
           }
-          
-          <app-wallet-display></app-wallet-display>
         </nav>
       </div>
     </header>
@@ -100,6 +98,7 @@
         
         <!-- Action Buttons -->
         <div class="footer-actions">
+          <app-wallet-display></app-wallet-display>
           @if (walletService.persona()?.type === PersonaType.SELLER) {
             <app-sales-history></app-sales-history>
           }
