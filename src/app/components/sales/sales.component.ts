@@ -92,6 +92,11 @@ export class SalesComponent {
       this.soundService.playCoinSound();
       const qtyText = this.singleScanMode() ? '' : ` (x${quantityToAdd})`;
       this.showToast(`🛒 ${item.name}${qtyText} added to cart!`, 'success');
+      
+      // Auto-close camera in single scan mode after successful add
+      if (this.singleScanMode()) {
+        this.stopScanning();
+      }
     } else {
       this.soundService.playSound('error');
       this.showToast('😬 Not enough in stock!', 'error');
