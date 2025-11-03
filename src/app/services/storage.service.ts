@@ -8,6 +8,19 @@ export class StorageService {
   private readonly INVENTORY_KEY = 'inventory_items';
   private readonly SALES_KEY = 'sales_history';
 
+  // Generic storage operations
+  getItem(key: string): string | null {
+    return localStorage.getItem(key);
+  }
+
+  setItem(key: string, value: string): void {
+    localStorage.setItem(key, value);
+  }
+
+  removeItem(key: string): void {
+    localStorage.removeItem(key);
+  }
+
   // Inventory operations
   getInventory(): InventoryItem[] {
     const data = localStorage.getItem(this.INVENTORY_KEY);
