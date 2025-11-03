@@ -13,6 +13,7 @@ import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
     <div class="wallet-container">
       <button class="wallet-button" (click)="showModal.set(true)">
         <span class="wallet-icon">💰</span>
+        <span class="wallet-label">Wallet</span>
         <span class="wallet-balance">{{ walletService.balance() | currencyFormat }}</span>
       </button>
 
@@ -127,6 +128,13 @@ import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 
     .wallet-icon {
       font-size: 1.25rem;
+    }
+
+    .wallet-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .wallet-balance {
@@ -389,6 +397,10 @@ import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
     @media (max-width: 768px) {
       .wallet-button {
         padding: 0.5rem 1rem;
+      }
+
+      .wallet-label {
+        font-size: 0.75rem;
       }
 
       .wallet-balance {
