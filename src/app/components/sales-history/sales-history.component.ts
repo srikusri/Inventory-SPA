@@ -2,11 +2,12 @@ import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { SalesHistoryService } from '../../services/sales-history.service';
 import { Sale } from '../../models/inventory-item.model';
+import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-sales-history',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CurrencyFormatPipe],
   template: `
     <button class="btn btn-success history-btn" (click)="showModal.set(true)">
       <span class="btn-icon">📊</span>
@@ -28,7 +29,7 @@ import { Sale } from '../../models/inventory-item.model';
                 <div class="summary-icon">💰</div>
                 <div class="summary-info">
                   <div class="summary-label">Total Sales</div>
-                  <div class="summary-value">\${{ salesHistoryService.getTotalSales().toFixed(2) }}</div>
+                  <div class="summary-value">{{ salesHistoryService.getTotalSales() | currencyFormat }}</div>
                 </div>
               </div>
               
@@ -44,7 +45,7 @@ import { Sale } from '../../models/inventory-item.model';
                 <div class="summary-icon">📅</div>
                 <div class="summary-info">
                   <div class="summary-label">Today</div>
-                  <div class="summary-value">\${{ todaySalesTotal().toFixed(2) }}</div>
+                  <div class="summary-value">{{ todaySalesTotal() | currencyFormat }}</div>
                 </div>
               </div>
               
@@ -52,7 +53,7 @@ import { Sale } from '../../models/inventory-item.model';
                 <div class="summary-icon">📈</div>
                 <div class="summary-info">
                   <div class="summary-label">This Week</div>
-                  <div class="summary-value">\${{ weekSalesTotal().toFixed(2) }}</div>
+                  <div class="summary-value">{{ weekSalesTotal() | currencyFormat }}</div>
                 </div>
               </div>
             </div>
@@ -107,7 +108,7 @@ import { Sale } from '../../models/inventory-item.model';
                         <div class="sale-item-row">
                           <span class="item-name">{{ item.item.name }}</span>
                           <span class="item-qty">x{{ item.quantity }}</span>
-                          <span class="item-price">\${{ (item.item.price * item.quantity).toFixed(2) }}</span>
+                          <span class="item-price">{{ (item.item.price * item.quantity) | currencyFormat }}</span>
                         </div>
                       }
                     </div>
@@ -115,7 +116,7 @@ import { Sale } from '../../models/inventory-item.model';
                     <div class="sale-footer">
                       <div class="sale-total">
                         <strong>Total:</strong>
-                        <strong class="total-amount">\${{ sale.total.toFixed(2) }}</strong>
+                        <strong class="total-amount">{{ sale.total | currencyFormat }}</strong>
                       </div>
                       <button 
                         class="btn btn-danger btn-small delete-btn"

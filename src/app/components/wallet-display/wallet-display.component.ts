@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { WalletService } from '../../services/wallet.service';
 import { PersonaType } from '../../models/wallet.model';
 import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
+import { CurrencyService } from '../../services/currency.service';
 
 @Component({
   selector: 'app-wallet-display',
@@ -39,10 +40,10 @@ import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
                 <div class="load-money-section">
                   <h3>💵 Add Money to Wallet</h3>
                   <div class="quick-amounts">
-                    <button class="amount-btn" (click)="loadQuickAmount(10)">+\$10</button>
-                    <button class="amount-btn" (click)="loadQuickAmount(20)">+\$20</button>
-                    <button class="amount-btn" (click)="loadQuickAmount(50)">+\$50</button>
-                    <button class="amount-btn" (click)="loadQuickAmount(100)">+\$100</button>
+                    <button class="amount-btn" (click)="loadQuickAmount(10)">+{{ formatQuickAmount(10) }}</button>
+                    <button class="amount-btn" (click)="loadQuickAmount(20)">+{{ formatQuickAmount(20) }}</button>
+                    <button class="amount-btn" (click)="loadQuickAmount(50)">+{{ formatQuickAmount(50) }}</button>
+                    <button class="amount-btn" (click)="loadQuickAmount(100)">+{{ formatQuickAmount(100) }}</button>
                   </div>
                   
                   <div class="custom-amount">
@@ -432,7 +433,10 @@ export class WalletDisplayComponent {
   showModal = signal(false);
   customAmount = signal<number | null>(null);
 
-  constructor(public walletService: WalletService) {}
+  constructor(
+    public walletService: WalletService,
+    private currencyService: CurrencyService
+  ) {}
 
   isSeller(): boolean {
     return this.walletService.persona()?.type === PersonaType.SELLER;
@@ -477,6 +481,10 @@ export class WalletDisplayComponent {
     if (diffHours < 24) return `${diffHours} hours ago`;
     
     return d.toLocaleDateString();
+  }
+
+  formatQuickAmount(amount: number): string {
+    return this.currencyService.format(amount, 0);
   }
 }
 

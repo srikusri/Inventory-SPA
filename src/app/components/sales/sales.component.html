@@ -10,7 +10,7 @@
       <div class="stat-card total">
         <span class="stat-icon">💵</span>
         <span class="stat-label">Total</span>
-        <span class="stat-value">${{ cartService.cartTotal().toFixed(2) }}</span>
+        <span class="stat-value">{{ cartService.cartTotal() | currencyFormat }}</span>
       </div>
     </div>
   </div>
@@ -98,7 +98,7 @@
             <div class="item-info">
               <h3>{{ cartItem.item.name }}</h3>
               <p class="barcode">{{ cartItem.item.barcode }}</p>
-              <p class="price">${{ cartItem.item.price.toFixed(2) }} each</p>
+              <p class="price">{{ cartItem.item.price | currencyFormat }} each</p>
             </div>
             
             <div class="item-controls">
@@ -119,7 +119,7 @@
               </div>
               
               <div class="item-total">
-                ${{ (cartItem.item.price * cartItem.quantity).toFixed(2) }}
+                {{ (cartItem.item.price * cartItem.quantity) | currencyFormat }}
               </div>
               
               <button class="remove-btn" (click)="removeFromCart(cartItem.item.barcode)">
@@ -132,11 +132,11 @@
         <div class="cart-summary">
           <div class="summary-row">
             <span class="label">Subtotal:</span>
-            <span class="value">${{ cartService.cartTotal().toFixed(2) }}</span>
+            <span class="value">{{ cartService.cartTotal() | currencyFormat }}</span>
           </div>
           <div class="summary-row total">
             <span class="label">Total:</span>
-            <span class="value">${{ cartService.cartTotal().toFixed(2) }}</span>
+            <span class="value">{{ cartService.cartTotal() | currencyFormat }}</span>
           </div>
         </div>
       </div>
@@ -162,13 +162,13 @@
               <div class="checkout-item">
                 <span class="item-name">{{ cartItem.item.name }}</span>
                 <span class="item-qty">x{{ cartItem.quantity }}</span>
-                <span class="item-price">${{ (cartItem.item.price * cartItem.quantity).toFixed(2) }}</span>
+                <span class="item-price">{{ (cartItem.item.price * cartItem.quantity) | currencyFormat }}</span>
               </div>
             }
             
             <div class="checkout-total">
               <span>Total Amount:</span>
-              <span class="total-amount">${{ cartService.cartTotal().toFixed(2) }}</span>
+              <span class="total-amount">{{ cartService.cartTotal() | currencyFormat }}</span>
             </div>
           </div>
         </div>
@@ -193,14 +193,14 @@
                 <div class="receipt-item">
                   <span>{{ item.item.name }}</span>
                   <span>x{{ item.quantity }}</span>
-                  <span>${{ (item.item.price * item.quantity).toFixed(2) }}</span>
+                  <span>{{ (item.item.price * item.quantity) | currencyFormat }}</span>
                 </div>
               }
             </div>
             
             <div class="receipt-total">
               <strong>Total:</strong>
-              <strong>${{ (completedSale()?.total || 0).toFixed(2) }}</strong>
+              <strong>{{ (completedSale()?.total || 0) | currencyFormat }}</strong>
             </div>
           </div>
         </div>

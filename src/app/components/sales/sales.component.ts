@@ -13,6 +13,7 @@ import { ToastComponent } from '../toast/toast.component';
 import { QrPaymentComponent } from '../qr-payment/qr-payment.component';
 import { Sale } from '../../models/inventory-item.model';
 import { PersonaType } from '../../models/wallet.model';
+import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-sales',
@@ -22,7 +23,8 @@ import { PersonaType } from '../../models/wallet.model';
     FormsModule,
     ZXingScannerModule,
     ToastComponent,
-    QrPaymentComponent
+    QrPaymentComponent,
+    CurrencyFormatPipe
   ],
   templateUrl: './sales.component.html',
   styleUrls: ['./sales.component.scss'],
