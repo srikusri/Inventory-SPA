@@ -173,8 +173,6 @@ export class SalesComponent {
   }
 
   onPaymentReceived(amount: number): void {
-    console.log('Payment received, amount:', amount); // Debug log
-    
     // Complete the sale after payment received
     const sale = this.cartService.finalizeSale();
     

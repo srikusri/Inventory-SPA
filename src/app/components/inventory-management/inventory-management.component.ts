@@ -7,7 +7,9 @@ import { InventoryService } from '../../services/inventory.service';
 import { GameService } from '../../services/game.service';
 import { SoundService } from '../../services/sound.service';
 import { ToastService } from '../../services/toast.service';
+import { CurrencyService } from '../../services/currency.service';
 import { ToastComponent } from '../toast/toast.component';
+import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 import { InventoryItem } from '../../models/inventory-item.model';
 
 @Component({
@@ -17,7 +19,8 @@ import { InventoryItem } from '../../models/inventory-item.model';
     CommonModule,
     FormsModule,
     ZXingScannerModule,
-    ToastComponent
+    ToastComponent,
+    CurrencyFormatPipe
   ],
   templateUrl: './inventory-management.component.html',
   styleUrls: ['./inventory-management.component.scss'],
@@ -58,6 +61,7 @@ export class InventoryManagementComponent {
 
   constructor(
     public inventoryService: InventoryService,
+    public currencyService: CurrencyService,
     private toastService: ToastService,
     private gameService: GameService,
     private soundService: SoundService
