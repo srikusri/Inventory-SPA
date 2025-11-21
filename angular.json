@@ -37,6 +37,9 @@
           },
           "configurations": {
             "production": {
+              "allowedCommonJsDependencies": [
+                "qrcode"
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -45,8 +48,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                  "maximumWarning": "12kb",
+                  "maximumError": "20kb"
                 }
               ],
               "outputHashing": "all"
@@ -78,4 +81,3 @@
     "analytics": false
   }
 }
-

@@ -22,6 +22,10 @@ export interface Sale {
 
 export enum AppMode {
   INVENTORY = 'inventory',
-  SALES = 'sales'
+  SALES = 'sales',
+  ACHIEVEMENTS = 'achievements',
+  SALES_HISTORY = 'sales_history',
+  PERSONA = 'persona',
+  WALLET = 'wallet',
+  DASHBOARD = 'dashboard'
 }
-

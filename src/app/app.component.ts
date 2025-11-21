@@ -8,6 +8,7 @@ import { SalesHistoryComponent } from './components/sales-history/sales-history.
 import { PersonaSelectionComponent } from './components/persona-selection/persona-selection.component';
 import { WalletDisplayComponent } from './components/wallet-display/wallet-display.component';
 import { QrScannerPaymentComponent } from './components/qr-scanner-payment/qr-scanner-payment.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CurrencyFormatPipe } from './pipes/currency-format.pipe';
 import { AppMode } from './models/inventory-item.model';
 import { GameService } from './services/game.service';
@@ -27,6 +28,7 @@ import { PersonaType } from './models/wallet.model';
     PersonaSelectionComponent,
     WalletDisplayComponent,
     QrScannerPaymentComponent,
+    DashboardComponent,
     CurrencyFormatPipe
   ],
   templateUrl: './app.component.html',
@@ -42,7 +44,7 @@ export class AppComponent {
   constructor(
     public gameService: GameService,
     public walletService: WalletService
-  ) {}
+  ) { }
 
   switchMode(mode: AppMode): void {
     this.currentMode.set(mode);

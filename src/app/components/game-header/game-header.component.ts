@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameService } from '../../services/game.service';
@@ -6,6 +6,7 @@ import { SoundService } from '../../services/sound.service';
 import { WalletService } from '../../services/wallet.service';
 import { PersonaType } from '../../models/wallet.model';
 import { SettingsComponent } from '../settings/settings.component';
+import { AppMode } from '../../models/inventory-item.model';
 
 @Component({
   selector: 'app-game-header',
@@ -45,6 +46,9 @@ import { SettingsComponent } from '../settings/settings.component';
       </div>
 
       <div class="header-actions">
+        <button class="dashboard-btn" (click)="openDashboard()" title="Manager Dashboard">
+          📊
+        </button>
         <button class="sound-toggle" (click)="toggleSound()" [title]="gameService.soundEnabled() ? 'Mute' : 'Unmute'">
           <span *ngIf="gameService.soundEnabled()">🔊</span>
           <span *ngIf="!gameService.soundEnabled()">🔇</span>
@@ -256,6 +260,25 @@ import { SettingsComponent } from '../settings/settings.component';
     }
 
     .sound-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .dashboard-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .dashboard-btn:hover {
       background: rgba(255, 255, 255, 0.3);
       transform: scale(1.1);
     }
@@ -520,7 +543,7 @@ import { SettingsComponent } from '../settings/settings.component';
 })
 export class GameHeaderComponent {
   private readonly STORE_NAME_KEY = 'kids_store_name';
-  
+
   storeName = signal<string>('');
   showStoreNameModal = signal(false);
   tempStoreName = signal('');
@@ -575,6 +598,13 @@ export class GameHeaderComponent {
 
   playSound(): void {
     this.soundService.playSound('coin');
+  }
+
+  @Output() modeSwitched = new EventEmitter<AppMode>();
+
+  openDashboard(): void {
+    this.modeSwitched.emit(AppMode.DASHBOARD);
+    this.soundService.playSound('click');
   }
 }
 

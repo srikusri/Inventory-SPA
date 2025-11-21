@@ -11,6 +11,7 @@ import { ToastService } from '../../services/toast.service';
 import { WalletService } from '../../services/wallet.service';
 import { ToastComponent } from '../toast/toast.component';
 import { QrPaymentComponent } from '../qr-payment/qr-payment.component';
+import { CustomerQueueComponent } from '../customer-queue/customer-queue.component';
 import { Sale } from '../../models/inventory-item.model';
 import { PersonaType } from '../../models/wallet.model';
 import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
@@ -25,7 +26,8 @@ import { CurrencyService } from '../../services/currency.service';
     ZXingScannerModule,
     ToastComponent,
     QrPaymentComponent,
-    CurrencyFormatPipe
+    CurrencyFormatPipe,
+    CustomerQueueComponent
   ],
   templateUrl: './sales.component.html',
   styleUrls: ['./sales.component.scss'],
@@ -59,7 +61,7 @@ export class SalesComponent {
     private soundService: SoundService,
     public walletService: WalletService,
     private currencyService: CurrencyService
-  ) {}
+  ) { }
 
   startScanning(): void {
     this.scanning.set(true);
@@ -71,7 +73,7 @@ export class SalesComponent {
 
   onScanSuccess(barcode: string): void {
     const item = this.inventoryService.getItemByBarcode(barcode);
-    
+
     this.gameService.onItemScanned();
     this.soundService.playSound('scan');
 
@@ -96,7 +98,7 @@ export class SalesComponent {
       this.soundService.playCoinSound();
       const qtyText = this.singleScanMode() ? '' : ` (x${quantityToAdd})`;
       this.showToast(`🛒 ${item.name}${qtyText} added to cart!`, 'success');
-      
+
       // Auto-close camera in single scan mode after successful add (with small delay for feedback)
       if (this.singleScanMode()) {
         setTimeout(() => {
@@ -159,7 +161,7 @@ export class SalesComponent {
     // Check if seller persona is active
     const persona = this.walletService.persona();
     const isSeller = persona?.type === PersonaType.SELLER;
-    
+
     if (isSeller) {
       // For sellers: Show QR code for payment
       const total = this.cartService.cartTotal();
@@ -175,14 +177,14 @@ export class SalesComponent {
   onPaymentReceived(amount: number): void {
     // Complete the sale after payment received
     const sale = this.cartService.finalizeSale();
-    
+
     if (sale) {
       this.completedSale.set(sale);
       this.gameService.onSaleCompleted(sale.total);
       this.soundService.playSound('levelUp');
       const formattedAmount = this.currencyService.format(amount);
       this.showToast(`🎉 Payment received! ${formattedAmount} added to wallet!`, 'success');
-      
+
       // Close QR payment modal and show receipt in checkout modal
       this.showQRPayment.set(false);
       this.showCheckoutModal.set(true);

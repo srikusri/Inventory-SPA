@@ -52,14 +52,14 @@ export class GameService {
 
   // Game state signals
   private gameStateSignal = signal<GameState>(this.getInitialGameState());
-  
+
   gameState = this.gameStateSignal.asReadonly();
   level = computed(() => this.gameStateSignal().level);
   score = computed(() => this.gameStateSignal().score);
   coins = computed(() => this.gameStateSignal().coins);
   experience = computed(() => this.gameStateSignal().experience);
   experienceToNextLevel = computed(() => this.gameStateSignal().experienceToNextLevel);
-  progressPercentage = computed(() => 
+  progressPercentage = computed(() =>
     (this.gameStateSignal().experience / this.gameStateSignal().experienceToNextLevel) * 100
   );
 
@@ -70,6 +70,7 @@ export class GameService {
   soundEnabled = this.soundEnabledSignal.asReadonly();
 
   constructor(private storageService: StorageService) {
+    this.loadCustomThemes();
     this.loadGameState();
     this.checkDailyStreak();
   }
@@ -188,7 +189,7 @@ export class GameService {
     if (lastPlay !== today) {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      
+
       if (lastPlay === yesterday.toDateString()) {
         // Continued streak
         this.updateGameState({
@@ -210,20 +211,20 @@ export class GameService {
   addExperience(amount: number): boolean {
     const state = this.gameStateSignal();
     const newExp = state.experience + amount;
-    
+
     if (newExp >= state.experienceToNextLevel) {
       // Level up!
       const overflow = newExp - state.experienceToNextLevel;
       const newLevel = state.level + 1;
       const newExpRequired = Math.floor(state.experienceToNextLevel * 1.5);
-      
+
       this.updateGameState({
         level: newLevel,
         experience: overflow,
         experienceToNextLevel: newExpRequired,
         coins: state.coins + (newLevel * 10)
       });
-      
+
       this.updateAchievementProgress('level_5', newLevel);
       this.saveGameState();
       return true; // Level up occurred
@@ -261,7 +262,7 @@ export class GameService {
   unlockAchievement(achievementId: string): Achievement | null {
     const state = this.gameStateSignal();
     const achievement = state.achievements.find(a => a.id === achievementId);
-    
+
     if (achievement && !achievement.unlocked) {
       achievement.unlocked = true;
       achievement.unlockedAt = new Date();
@@ -270,24 +271,24 @@ export class GameService {
       this.saveGameState();
       return achievement;
     }
-    
+
     return null;
   }
 
   updateAchievementProgress(achievementId: string, progress: number): Achievement | null {
     const state = this.gameStateSignal();
     const achievement = state.achievements.find(a => a.id === achievementId);
-    
+
     if (achievement && !achievement.unlocked) {
       achievement.progress = Math.min(progress, achievement.maxProgress);
-      
+
       if (achievement.progress >= achievement.maxProgress) {
         return this.unlockAchievement(achievementId);
       }
-      
+
       this.saveGameState();
     }
-    
+
     return null;
   }
 
@@ -327,7 +328,7 @@ export class GameService {
     this.addExperience(5);
     this.addScore(10);
     this.updateAchievementProgress('first_scan', 1);
-    
+
     const scannedCount = parseInt(localStorage.getItem('total_scans') || '0') + 1;
     localStorage.setItem('total_scans', String(scannedCount));
     this.updateAchievementProgress('scanner_pro', scannedCount);
@@ -336,7 +337,7 @@ export class GameService {
   onItemAdded(): void {
     this.addExperience(10);
     this.addScore(20);
-    
+
     const itemCount = parseInt(localStorage.getItem('total_items_added') || '0') + 1;
     localStorage.setItem('total_items_added', String(itemCount));
     this.updateAchievementProgress('inventory_expert', itemCount);
@@ -348,10 +349,29 @@ export class GameService {
     this.addExperience(20);
     this.addScore(50);
     this.updateAchievementProgress('first_sale', 1);
-    
+
     const salesCount = parseInt(localStorage.getItem('total_sales') || '0') + 1;
     localStorage.setItem('total_sales', String(salesCount));
     this.updateAchievementProgress('sales_master', salesCount);
+  }
+
+  addCustomTheme(theme: StoreTheme): void {
+    // Add to available themes
+    this.availableThemes.push(theme);
+
+    // Select the new theme
+    this.setTheme(theme);
+
+    // Save custom themes to local storage
+    const customThemes = this.availableThemes.filter(t => t.id.startsWith('custom_'));
+    this.storageService.setItem('custom_themes', customThemes);
+  }
+
+  private loadCustomThemes(): void {
+    const customThemes = this.storageService.getItem<StoreTheme[]>('custom_themes');
+    if (customThemes) {
+      this.availableThemes.push(...customThemes);
+    }
   }
 }
 

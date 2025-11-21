@@ -6,100 +6,148 @@ import { Injectable } from '@angular/core';
 export class SoundService {
   private sounds: { [key: string]: HTMLAudioElement } = {};
   private enabled = true;
+  private audioContext: AudioContext | null = null;
 
   constructor() {
-    this.initSounds();
+    this.initAudioContext();
+    this.preloadSounds();
   }
 
-  private initSounds(): void {
-    // Create audio contexts for Web Audio API
-    // For now, we'll use simple beep sounds generated programmatically
+  private initAudioContext(): void {
+    try {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    } catch (e) {
+      console.warn('Web Audio API not supported');
+    }
+  }
+
+  private preloadSounds(): void {
+    // Preload common sound files if they exist
+    const soundFiles = ['cash-register', 'coin', 'success', 'error', 'level-up'];
+    soundFiles.forEach(sound => {
+      const audio = new Audio();
+      audio.src = `assets/sounds/${sound}.mp3`;
+      audio.load();
+      this.sounds[sound] = audio;
+    });
   }
 
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
   }
 
-  playSound(type: 'scan' | 'success' | 'error' | 'levelUp' | 'achievement' | 'coin' | 'click'): void {
+  playSound(type: 'scan' | 'success' | 'error' | 'levelUp' | 'achievement' | 'coin' | 'click' | 'purchase'): void {
     if (!this.enabled) return;
 
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    // Try to play file first
+    if (this.sounds[type]) {
+      const sound = this.sounds[type];
+      sound.currentTime = 0;
+      sound.play().catch(() => this.playSynthesizedSound(type));
+    } else {
+      this.playSynthesizedSound(type);
+    }
+  }
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+  private playSynthesizedSound(type: string): void {
+    if (!this.audioContext) return;
 
-    // Configure sound based on type
+    const ctx = this.audioContext;
+    const now = ctx.currentTime;
+
     switch (type) {
       case 'scan':
-        oscillator.frequency.value = 800;
-        gainNode.gain.value = 0.3;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.1);
+        this.beep(800, 0.1, 'sine');
         break;
       
       case 'success':
-        oscillator.frequency.value = 600;
-        gainNode.gain.value = 0.4;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.2);
-        setTimeout(() => {
-          const osc2 = audioContext.createOscillator();
-          const gain2 = audioContext.createGain();
-          osc2.connect(gain2);
-          gain2.connect(audioContext.destination);
-          osc2.frequency.value = 800;
-          gain2.gain.value = 0.4;
-          osc2.start();
-          osc2.stop(audioContext.currentTime + 0.2);
-        }, 100);
+        // Ascending major triad
+        this.beep(523.25, 0.1, 'triangle', now);       // C5
+        this.beep(659.25, 0.1, 'triangle', now + 0.1); // E5
+        this.beep(783.99, 0.2, 'triangle', now + 0.2); // G5
         break;
       
       case 'error':
-        oscillator.frequency.value = 200;
-        gainNode.gain.value = 0.3;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.3);
+        // Low buzz
+        this.beep(150, 0.3, 'sawtooth');
         break;
       
       case 'levelUp':
-        this.playMelody(audioContext, [523, 587, 659, 784]);
-        return;
+        // Fanfare
+        this.playMelody([
+          { freq: 523.25, dur: 0.1, time: 0 },
+          { freq: 659.25, dur: 0.1, time: 0.1 },
+          { freq: 783.99, dur: 0.1, time: 0.2 },
+          { freq: 1046.50, dur: 0.4, time: 0.3 }
+        ]);
+        break;
       
       case 'achievement':
-        this.playMelody(audioContext, [659, 784, 880, 1047]);
-        return;
+        // Twinkle sound
+        this.playMelody([
+          { freq: 987.77, dur: 0.1, time: 0 },
+          { freq: 1318.51, dur: 0.1, time: 0.1 },
+          { freq: 1567.98, dur: 0.2, time: 0.2 }
+        ]);
+        break;
       
       case 'coin':
-        oscillator.frequency.value = 1000;
-        gainNode.gain.value = 0.3;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.05);
+        // High ping
+        this.beep(1200, 0.05, 'sine', now);
+        this.beep(1600, 0.1, 'sine', now + 0.05);
         break;
       
       case 'click':
-        oscillator.frequency.value = 400;
-        gainNode.gain.value = 0.2;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.05);
+        this.beep(400, 0.05, 'sine');
+        break;
+
+      case 'purchase':
+        // Cash register sound simulation
+        this.playCashRegister();
         break;
     }
   }
 
-  private playMelody(context: AudioContext, frequencies: number[]): void {
-    frequencies.forEach((freq, index) => {
-      setTimeout(() => {
-        const osc = context.createOscillator();
-        const gain = context.createGain();
-        osc.connect(gain);
-        gain.connect(context.destination);
-        osc.frequency.value = freq;
-        gain.gain.value = 0.3;
-        osc.start();
-        osc.stop(context.currentTime + 0.15);
-      }, index * 100);
-    });
+  private beep(freq: number, duration: number, type: OscillatorType = 'sine', startTime?: number): void {
+    if (!this.audioContext) return;
+    
+    const ctx = this.audioContext;
+    const start = startTime || ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+    
+    gain.gain.setValueAtTime(0.1, start);
+    gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(start);
+    osc.stop(start + duration);
+  }
+
+  private playMelody(notes: { freq: number, dur: number, time: number }[]): void {
+    if (!this.audioContext) return;
+    const now = this.audioContext.currentTime;
+    notes.forEach(note => this.beep(note.freq, note.dur, 'square', now + note.time));
+  }
+
+  private playCashRegister(): void {
+    if (!this.audioContext) return;
+    const ctx = this.audioContext;
+    const now = ctx.currentTime;
+
+    // Cha-ching!
+    this.beep(2000, 0.1, 'square', now);
+    this.beep(2000, 0.1, 'square', now + 0.1);
+    this.beep(4000, 0.4, 'sine', now + 0.2);
   }
 
   playSuccessJingle(): void {

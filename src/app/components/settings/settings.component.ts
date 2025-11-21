@@ -6,10 +6,12 @@ import { InventoryService } from '../../services/inventory.service';
 import { SoundService } from '../../services/sound.service';
 import { CurrencyService } from '../../services/currency.service';
 
+import { ThemeCreatorComponent } from '../theme-creator/theme-creator.component';
+
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ThemeCreatorComponent],
   template: `
     <button class="settings-icon-btn" (click)="showModal = true" title="Settings">
       ⚙️
@@ -96,6 +98,11 @@ import { CurrencyService } from '../../services/currency.service';
                 <p>📦 Items in Store: {{ inventoryService.inventoryCount() }}</p>
                 <p>🏆 Achievements: {{ unlockedAchievements() }} / {{ totalAchievements() }}</p>
               </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>🎨 Theme</h3>
+              <app-theme-creator></app-theme-creator>
             </div>
 
             <div class="settings-section danger-zone">
@@ -580,7 +587,7 @@ export class SettingsComponent {
   showConfirmModal = signal(false);
   showSuccessModal = signal(false);
   resetType = signal<'inventory' | 'progress' | 'everything'>('inventory');
-  
+
   confirmTitle = signal('');
   confirmMessage = signal('');
   confirmIcon = signal('');
@@ -591,7 +598,7 @@ export class SettingsComponent {
     public inventoryService: InventoryService,
     private soundService: SoundService,
     public currencyService: CurrencyService
-  ) {}
+  ) { }
 
   toggleSound(): void {
     this.gameService.toggleSound();
